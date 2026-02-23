@@ -1,4 +1,3 @@
-from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_ollama import ChatOllama
@@ -38,8 +37,8 @@ Project idea:
 
 chain=prompt|llm|parser
 
-idea=input("Enter your idea: ")
 
-response=chain.invoke({"idea":idea})
 
-print(response)
+def generate_project_plan(user_input: str):
+    return chain.invoke({"idea": user_input})
+
