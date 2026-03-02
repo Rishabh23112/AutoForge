@@ -1,12 +1,11 @@
-import json
-import re
 from typing import List
-
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
-from langchain_ollama import ChatOllama
+from langchain_google_genai import ChatGoogleGenerativeAI
+from dotenv import load_dotenv
 from pydantic import AliasChoices, BaseModel, Field
 
+load_dotenv()
 
 class AgentOutput(BaseModel):
     path: str = Field(
@@ -67,21 +66,16 @@ def _extract_json_payload(text: str) -> str | None:
 
 
 def generate_project_files(project_plan) -> ProjectFiles:
-    if isinstance(project_plan, dict):
-        project_plan = json.dumps(project_plan, indent=2)
-
     formatted_prompt = prompt.format(project_plan=project_plan)
 
-    strategies = [
-        ("deepseek-coder", "json_schema"),
-        ("deepseek-coder", "function_calling"),
-        ("mistral", "json_schema"),
-    ]
+    strategies = ["json_schema", "function_calling"]
 
     last_error = None
-    for attempt_idx, (model_name, method) in enumerate(strategies, start=1):
+    for attempt_idx, method in enumerate(strategies, start=1):
         try:
-            llm = ChatOllama(model=model_name, temperature=0.0)
+            llm = ChatGoogleGenerativeAI(
+                model="gemini-2.5-flash"
+            )
             structured_llm = llm.with_structured_output(
                 ProjectFiles,
                 method=method,
@@ -93,12 +87,7 @@ def generate_project_files(project_plan) -> ProjectFiles:
             parsing_error = response.get("parsing_error")
             raw = response.get("raw")
 
-            print(
-                f"[Debug] Strategy {attempt_idx}/{len(strategies)} "
-                f"model={model_name} method={method}"
-            )
-            if raw is not None:
-                print(f"[Debug] Raw LLM response: {raw}")
+
 
             if parsed is not None:
                 return parsed
@@ -114,9 +103,6 @@ def generate_project_files(project_plan) -> ProjectFiles:
             raise RuntimeError("Structured output returned no parsed content.")
         except Exception as e:
             last_error = e
-            print(
-                f"[Attempt {attempt_idx}/{len(strategies)}] "
-                f"Failed to parse LLM output: {e}"
-            )
+
 
     raise RuntimeError(f"Failed to generate valid project files JSON: {last_error}")
