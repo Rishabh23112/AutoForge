@@ -4,6 +4,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 from pydantic import AliasChoices, BaseModel, Field
+from agents.project_state import ProjectState
 
 load_dotenv()
 
@@ -106,3 +107,11 @@ def generate_project_files(project_plan) -> ProjectFiles:
 
 
     raise RuntimeError(f"Failed to generate valid project files JSON: {last_error}")
+
+def generate_project_state(project_plan: str) -> ProjectState:
+    project_files = generate_project_files(project_plan)
+    return ProjectState(
+        project_plan=project_plan,
+        files=project_files.files,
+        fix_history=[]
+    )
