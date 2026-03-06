@@ -78,11 +78,14 @@ def _sanitize_path(path: str) -> str:
 
 def write_file(base_dir: str, relative_path: str, content: str):
     relative_path = _sanitize_path(relative_path)
-    
-    full_path = os.path.join(base_dir, relative_path)
-    dir_name = os.path.dirname(full_path)
-    if dir_name:
-        os.makedirs(dir_name, exist_ok=True)
+
+    full_path = os.path.abspath(os.path.join(base_dir, relative_path))
+    base_dir_abs = os.path.abspath(base_dir)
+
+    if not full_path.startswith(base_dir_abs):
+        raise ValueError(f"Unsafe file path detected: {relative_path}")
+
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
     with open(full_path, "w", encoding="utf-8") as f:
         f.write(content)
@@ -93,18 +96,30 @@ def format_codes(base_dir: str, files: list):
     
     if any(p.endswith((".js", ".jsx", ".ts", ".tsx", ".html", ".css")) for p in file_paths):
         local_prettier = os.path.join(os.getcwd(), "node_modules", ".bin", "prettier.cmd")
+        
+        use_shell = os.name == 'nt'
+        
         if os.path.exists(local_prettier):
             cmd = [local_prettier, "--write", "."]
         else:
-            cmd = ["npx", "-y", "prettier", "--write", "."]
+            # Fallback to npx
+            cmd = ["npx", "prettier", "--write", "."]
             
-        subprocess.run(cmd, cwd=base_dir, check=False, shell=True, capture_output=True, text=True)
+        try:
+            subprocess.run(cmd, cwd=base_dir, check=False, shell=use_shell, capture_output=True, text=True, timeout=30)
+        except Exception as e:
+            print(f"Warning: Prettier formatting failed: {e}")
         
     if any(p.endswith(".py") for p in file_paths):
-        subprocess.run(["python", "-m", "black", "."], cwd=base_dir, check=False, shell=True, capture_output=True, text=True)
+        try:
+            subprocess.run(["python", "-m", "black", "."], cwd=base_dir, check=False, shell=False, capture_output=True, text=True, timeout=30)
+        except Exception as e:
+            print(f"Warning: Black formatting failed: {e}")
+
 
 
 def write_project(files, base_dir: str):
+    os.makedirs(base_dir, exist_ok=True)
     for file in files:
         relative_path = _get_file_path(file)
         content = _get_file_content(file)

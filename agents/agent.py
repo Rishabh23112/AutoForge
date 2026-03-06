@@ -1,28 +1,21 @@
+import re
 from typing import List
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
-from pydantic import AliasChoices, BaseModel, Field
-from agents.project_state import ProjectState
+from agents.project_state import ProjectFile, ProjectState, FixAttempt
+from pydantic import BaseModel, Field
+
 
 load_dotenv()
 
-class AgentOutput(BaseModel):
-    path: str = Field(
-        validation_alias=AliasChoices("path", "file_location"),
-        description="The relative file path, e.g. src/index.html",
-    )
-    content: str = Field(
-        validation_alias=AliasChoices("content", "file_content"),
-        description="The complete source code for this file",
-    )
-
 
 class ProjectFiles(BaseModel):
-    files: List[AgentOutput] = Field(
+    files: List[ProjectFile] = Field(
         description="List of all project files with their paths and contents"
     )
+
 
 
 parser = PydanticOutputParser(pydantic_object=ProjectFiles)
@@ -47,6 +40,26 @@ Project Plan:
 {project_plan}
 """,
     input_variables=["project_plan"],
+)
+
+
+modify_prompt = PromptTemplate(
+    template="""
+    You are updating an existing project.
+
+    Existing Project Files:
+    {existing_files}
+
+    User Modification Request:
+    {instruction}
+
+    Rules:
+    - Modify only what is necessary
+    - Return FULL updated files
+    - Do NOT explain anything
+    - Return valid JSON
+    """,
+    input_variables=["existing_files", "instruction"],
 )
 
 
@@ -113,5 +126,95 @@ def generate_project_state(project_plan: str) -> ProjectState:
     return ProjectState(
         project_plan=project_plan,
         files=project_files.files,
-        fix_history=[]
+        fix_history=[],
+        status = "generated"
     )
+
+
+def modify_project_state(state: ProjectState, instruction: str) -> ProjectState:
+    formatted_files = "\n\n".join(
+        f"FILE: {file.path}\n{file.content}"
+        for file in state.files
+    )
+
+    formatted_prompt = modify_prompt.format(
+        existing_files=formatted_files,
+        instruction=instruction,
+    )
+
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+    structured_llm = llm.with_structured_output(ProjectFiles)
+
+    response = structured_llm.invoke(formatted_prompt)
+
+    updated_files = response.files
+
+    file_map = {f.path: f for f in state.files}
+
+    for updated in updated_files:
+        file_map[updated.path] = updated
+
+    state.files = list(file_map.values())
+    
+    state.status = "modified"
+    state.iteration =0  
+
+    return state
+
+
+def auto_fix_project(state: ProjectState, error_log: str) -> ProjectState:
+
+    if state.iteration >= state.max_iterations:
+        state.status = "failed"
+        return state
+
+    formatted_files = "\n\n".join(
+        f"FILE: {file.path}\n{file.content}"
+        for file in state.files
+    )
+
+
+    previous_fixes = "\n".join(
+    f"Attempt {i+1}: {fix.error_log}"
+    for i, fix in enumerate(state.fix_history)
+    )
+
+    fix_prompt = f"""
+        The project below is failing.
+
+        ERROR:
+        {error_log}
+
+        Previous Fix Attempts:
+        {previous_fixes}
+
+        Existing Project Files:
+        {formatted_files}
+
+        Fix the errors completely.
+        Return ONLY the corrected files.
+        Do NOT explain anything.
+        """
+
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+    structured_llm = llm.with_structured_output(ProjectFiles)
+
+    response = structured_llm.invoke(fix_prompt)
+
+    updated_files = response.files
+
+    file_map = {f.path: f for f in state.files}
+
+    for updated in updated_files:
+        file_map[updated.path] = updated
+
+    state.files = list(file_map.values())
+    
+    state.fix_history.append(
+        FixAttempt(error_log=error_log, applied_patch_summary=f"Fix Attempt #{state.iteration + 1}")
+    )
+
+    state.iteration +=1
+    state.status = "fixing"
+
+    return state
