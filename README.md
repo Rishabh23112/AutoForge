@@ -18,7 +18,7 @@ Most AI code generators stop at generation. I am building AutoForge to close the
 
 I am building the system in distinct phases. The foundational generation pipeline is complete, and active development is focused on the execution and self-healing loop.
 
-### ✅ Phase 1 & 2: The Generation Engine (Completed)
+### ✅ Phase 1 & 2: The Generation Engine 
 The core generation pipeline successfully translates natural language into a local codebase, built entirely from scratch.
 * **The Planner Agent:** Ingests a user prompt and outputs a structured JSON blueprint (tech stack, folder structure, deployment steps).
 * **The Builder Agent:** Consumes the blueprint and leverages **Pydantic structured outputs** to generate precise file paths and code snippets.
@@ -30,7 +30,7 @@ Code generation is useless without validation. The current focus is building a s
 * **Health Checks:** Automated pinging of local endpoints to verify successful server startup.
 * **Test Execution:** Programmatically running test suites (e.g., `pytest`) inside the container and capturing `stdout`/`stderr`.
 
-### 🔮 Phase 4: The Auto-Fix Loop (Planned)
+### 🔮 Phase 4: The Auto-Fix Loop 
 The brain of the operation. When Phase 3 catches an error, Phase 4 fixes it.
 * **Context-Aware Debugging:** Feeding specific stack traces and broken files back to the LLM without blowing up the context window.
 * **Patch Application:** LLM outputs JSON patches to fix specific lines of code.
@@ -47,7 +47,7 @@ The brain of the operation. When Phase 3 catches an error, Phase 4 fixes it.
 
 ### Prerequisites
 * Python 3.10+
-* An active LLM API Key (OpenAI / Anthropic / OpenRouter)
+* An active LLM API Key (Gemini)
 * Docker Desktop (Required for upcoming execution features)
 
 ---
