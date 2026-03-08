@@ -1,4 +1,4 @@
-![AutoForge Logo](file:///C:/Users/irish/.gemini/antigravity/brain/3e6fe37a-1276-40f0-a0e3-1a3b6c7a602f/autoforge_logo_v1_1773007709745.png)
+
 
 # AutoForge 🔨 
 **The Autonomous AI Software Engineer that Plans, Builds, Runs, and Self-Heals.**
