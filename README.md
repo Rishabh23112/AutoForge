@@ -16,6 +16,36 @@ Most AI code generators output raw text and leave the debugging to you. AutoForg
 
 ---
 
+## 🚩 Problem: The "Broken" AI Workflow
+Current AI coding tools (LLMs) often generate code in isolation. The developer is left to:
+1. Manually create files and copy-paste code.
+2. Debug environment-specific dependency issues.
+3. Waste time fixing syntax errors or logical gaps in generated snippets.
+4. **Manually test the generated outputs** to verify correctness and safety.
+
+AutoForge addresses this "disconnected code" problem by bridging the gap between generation and execution. 
+
+> [!TIP]
+> **Future Roadmap:** I am working on an automated evaluation engine that will test generated code against predefined benchmarks and evaluation criteria, removing the manual verification step entirely.
+
+---
+
+## 🛠️ Approach: The Self-Healing Pipeline
+AutoForge implements a **Closed-Loop Development Architecture**:
+- **Structured Planning:** Instead of raw text, I use Pydantic schemas to ensure the AI's blueprint is always valid JSON.
+- **Recursive Refinement:** If the code fails during execution, the error logs are fed back into the "Fixer Agent," which applies patches until the project is stable.
+- **Environment Autonomy:** The system automatically detects the language (Python/Node.js) and manages dependency installation (`pip` or `npm`).
+
+---
+
+## 🔄 Iterations: The Evolution of AutoForge
+- **Phase 1: Single-File Generation:** Initial proof-of-concept focused on creating individual Python scripts.
+- **Phase 2: Multi-File Pydantic Engine:** Transitioned to structured outputs to allow complex, inter-dependent project generation.
+- **Phase 3: The Execution Loop:** Integrated the `subprocess` runner and automated dependency management.
+- **Phase 4 (Current): Auto-Fix Logic:** Added the self-healing loop that analyzes stack traces to recursively improve code quality.
+
+---
+
 ## 🏗️ Architecture: How It Works
 
 ```mermaid
@@ -39,7 +69,21 @@ graph TD
 
 ---
 
-## �️ Tech Stack
+## 💡 Key Design Choices
+- **Gemini 2.5 Flash:** Chosen for its superior reasoning capabilities and speed in generating complex multi-file structures.
+- **Pydantic for Schema Enforcement:** Prevents the "JSON parsing nightmare" common in LLM workflows by strictly validating outputs before writing to disk.
+- **Recursive Self-Healing:** Implementing a `max_iterations = 5` loop ensures the AI doesn't get stuck in infinite loops while providing enough attempts to fix complex bugs.
+- **Path/Content Alias Support:** Uses `AliasChoices` in Pydantic models to handle diverse LLM naming conventions for file outputs.
+
+---
+
+## ⏱️ Daily Time Commitment
+- **Development Time:** ~4 hours per day.
+- **Breakdown:** 40% Architecture/Planning, 40% Logic Implementation, 20% Prompt Engineering & Tuning.
+
+---
+
+## ️ Tech Stack
 *   **Core:** Python 
 *   **Intelligence:** Google Gemini 2.5 Flash
 *   **Orchestration:** LangChain (Core, Google GenAI, Community)
@@ -80,12 +124,12 @@ python main.py
 ---
 
 ## 🔮 Roadmap
-- [x] Multi-file Generation Engine
-- [x] Pydantic-based Structured I/O
-- [x] Basic Auto-Fix Loop
-- [ ] Docker Integration (Phase 3)
-- [ ] Real-time Streaming UI (FastAPI + SSE)
-- [ ] Git Integration (Auto-commits on fix)
+- [1] Multi-file Generation Engine
+- [2] Pydantic-based Structured I/O
+- [3] Basic Auto-Fix Loop
+- [4] Docker Integration 
+- [5] Real-time Streaming UI (FastAPI + SSE)
+- [6] Git Integration (Auto-commits on fix)
 
 ---
 
