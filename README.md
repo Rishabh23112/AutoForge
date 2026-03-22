@@ -98,7 +98,8 @@ graph TD
 ### Prerequisites
 1.  **Python**
 2.  **Google Gemini API Key** (Set as `GOOGLE_API_KEY` in `.env`)
-3.  **Docker Desktop** (Optional, for upcoming sandboxed execution)
+3.  **Groq API Key** (Set as `GROQ_API_KEY` in `.env`)
+4.  **Docker Desktop** (Optional, for upcoming sandboxed execution)
 
 ### Installation
 ```bash
