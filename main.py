@@ -6,6 +6,7 @@ from agents.agent import (
 
 from agents.file_creator import generate_project_name, write_project
 from agents.executor import run_project, detect_run_command, install_dependencies
+from evaluation.project_evaluator import evaluate_project, aggregate_scores, print_results
 
 
 idea = input("Enter your idea: ")
@@ -88,3 +89,10 @@ while True:
         print("Project running successfully.")
     else:
         print("Auto-fix failed.")
+
+
+results=evaluate_project(state.files)
+
+print_results(results)
+
+print("Average Score:", aggregate_scores(results))

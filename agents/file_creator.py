@@ -1,11 +1,12 @@
 from langchain_core.output_parsers import StrOutputParser
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
+from rich import print
 import subprocess
 import os
 import re
 
-llm = ChatOllama(model="mistral", temperature=0.0)
+llm = ChatGroq(model_name="moonshotai/kimi-k2-instruct", temperature=0.0)
 parser = StrOutputParser()
 
 prompt = PromptTemplate(
@@ -30,7 +31,6 @@ chain = prompt | llm | parser
 def _sanitize_project_name(raw_name: str) -> str:
     text = (raw_name or "").strip()
 
-    
     quoted = re.search(r"""["']([a-zA-Z0-9 _-]{1,80})["']""", text)
     candidate = quoted.group(1) if quoted else text.splitlines()[0] if text else ""
 
@@ -50,29 +50,26 @@ def generate_project_name(project_plan: str | dict):
     return _sanitize_project_name(raw_name)
 
 
+
 def _get_file_path(file) -> str:
-    """Extract a relative path from either a dict or an object."""
     if isinstance(file, dict):
-        return file.get("path") or file.get("file_location") or ""
-    return getattr(file, "path", None) or getattr(file, "file_location", "") or ""
+        return str(file.get("path") or file.get("file_location") or "")
+    return str(getattr(file, "path", "") or getattr(file, "file_location", ""))
 
 
 def _get_file_content(file) -> str:
-    """Extract content from either a dict or an object."""
     if isinstance(file, dict):
-        return file.get("content") or file.get("file_content") or ""
-    return getattr(file, "content", None) or getattr(file, "file_content", "") or ""
+        return str(file.get("content") or file.get("file_content") or "")
+    return str(getattr(file, "content", "") or getattr(file, "file_content", ""))
 
 
 def _sanitize_path(path: str) -> str:
-    """Sanitize file paths by removing extra spaces and normalizing separators."""
     path = path.replace("\\", "/")
-    
     path = re.sub(r'\s*/\s*', '/', path)
-    
+
     parts = path.split('/')
     parts = [part.strip() for part in parts if part.strip()]
-    
+
     return '/'.join(parts)
 
 
@@ -93,42 +90,49 @@ def write_file(base_dir: str, relative_path: str, content: str):
 
 def format_codes(base_dir: str, files: list):
     file_paths = [_get_file_path(f) for f in files]
-    
-    if any(p.endswith((".js", ".jsx", ".ts", ".tsx", ".html", ".css")) for p in file_paths):
-        local_prettier = os.path.join(os.getcwd(), "node_modules", ".bin", "prettier.cmd")
-        
-        use_shell = os.name == 'nt'
-        
-        if os.path.exists(local_prettier):
-            cmd = [local_prettier, "--write", "."]
-        else:
-            # Fallback to npx
-            cmd = ["npx", "prettier", "--write", "."]
-            
+
+    #  formatting
+    if any(p.endswith((".js", ".html", ".css")) for p in file_paths):
         try:
-            subprocess.run(cmd, cwd=base_dir, check=False, shell=use_shell, capture_output=True, text=True, timeout=30)
+            subprocess.run(
+                ["npx", "prettier", "--write", "."],
+                cwd=base_dir,
+                check=False,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
         except Exception as e:
-            print(f"Warning: Prettier formatting failed: {e}")
-        
+            print(f"[red] Prettier failed: {e}[/red]")
+
     if any(p.endswith(".py") for p in file_paths):
         try:
-            subprocess.run(["python", "-m", "black", "."], cwd=base_dir, check=False, shell=False, capture_output=True, text=True, timeout=30)
+            subprocess.run(
+                ["python", "-m", "black", "."],
+                cwd=base_dir,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
         except Exception as e:
-            print(f"Warning: Black formatting failed: {e}")
-
+            print(f"[red] Black failed: {e}[/red]")
 
 
 def write_project(files, base_dir: str):
     os.makedirs(base_dir, exist_ok=True)
+    written_files = []
+
     for file in files:
-        relative_path = _get_file_path(file)
+        path = _get_file_path(file)
         content = _get_file_content(file)
 
-        if not relative_path or content is None:
-            raise ValueError(
-                f"Invalid file entry received: expected path/content fields, got {file}"
-            )
+        write_file(base_dir, path, content)
 
-        write_file(base_dir, relative_path, content)
+        full_path = os.path.join(base_dir, path)
+        written_files.append(full_path)
 
     format_codes(base_dir, files)
+
+    return written_files

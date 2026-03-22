@@ -92,7 +92,6 @@ def generate_project_files(project_plan) -> ProjectFiles:
             )
             structured_llm = llm.with_structured_output(
                 ProjectFiles,
-                method=method,
                 include_raw=True,
             )
             response = structured_llm.invoke(formatted_prompt)
