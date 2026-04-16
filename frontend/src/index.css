@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-sans: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "Courier New", Courier, monospace;
+  
+  --color-cyber-black: #050505;
+  --color-neon-green: #39FF14;
+  --color-neon-purple: #9D00FF;
+  --color-glass: rgba(20, 20, 25, 0.7);
+  --color-glass-border: rgba(255, 255, 255, 0.1);
+  --color-text-main: #FFFFFF;
+  --color-text-dim: #A0A0A0;
+}
+
+body {
+  background-color: var(--color-cyber-black);
+  color: var(--color-text-main);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  background-image: 
+    linear-gradient(rgba(57, 255, 20, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 255, 20, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+}
+
+.glass-panel {
+  background: var(--color-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 12px;
+}
+
+.bento-card {
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+  padding: 24px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bento-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-neon-purple), transparent);
+  opacity: 0.5;
+}
+
+.card-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-neon-green);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.card-body {
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+}
+
+.neon-glow-green {
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+}
+
+.neon-text-green {
+  color: var(--color-neon-green);
+}
+
+.neon-glow-purple {
+  box-shadow: 0 0 40px rgba(157, 0, 255, 0.15);
+}
+
+.gradient-text {
+  background: linear-gradient(to bottom right, #fff, #999);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-outline {
+  border: 1px solid var(--color-neon-green);
+  color: var(--color-neon-green);
+  background: transparent;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
+.btn-glow {
+  background: var(--color-neon-green);
+  color: #000;
+  border: none;
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
+/* IDE styling */
+.ide-container {
+  background: #0d0d12;
+  border: 1px solid #222;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.ide-toolbar {
+  height: 40px;
+  background: #1a1a24;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 20px;
+  border-bottom: 1px solid #333;
+}
+.ide-sidebar {
+  background: #12121a;
+  border-right: 1px solid #222;
+  padding: 12px;
+}
+.code-area {
+  padding: 20px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  background: #0d0d12;
+}
+.agent-terminal {
+  height: 160px;
+  background: #050505;
+  border-top: 1px solid #333;
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
