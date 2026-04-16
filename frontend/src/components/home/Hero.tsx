@@ -53,7 +53,7 @@ export const Hero = () => {
             </h1>
 
             <p className="hero-element text-lg md:text-xl text-[var(--color-text-dim)] mb-10">
-              The first autonomous AI agent that handles the complete SDLC. Generate, test, self-heal, and deploy full-stack applications instantly.
+              An AI agent that handles the complete SDLC. Generate, test, self-heal, and deploy full-stack applications instantly.
             </p>
 
             <div className="hero-element flex flex-col sm:flex-row items-start gap-4">
