@@ -113,7 +113,7 @@ If you prefer to run the components manually:
 │   ├── src/components/ # Modular UI (Atomic Design)
 │   ├── src/hooks/      # State management & Event Streaming
 │   └── src/pages/      # Main application views
-├── .env.example        # Environment template
+├── .env                # Environment template
 ├── docker-compose.yml  # Root container orchestration
 └── README.md           # Documentation
 ```
