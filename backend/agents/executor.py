@@ -5,7 +5,7 @@ import os
 def run_project(base_dir: str, run_command:str):
     image_name = f"sandbox_{os.path.basename(base_dir).lower()}"
     try:
-        # Use 8001 and 3001 on host to avoid conflict with AutoForge backend (on 8000)
+        
         command = ["docker", "run", "--rm", "-p", "8001:8000", "-p", "3001:3000", image_name]
         if run_command:
             command.extend(shlex.split(run_command))
@@ -19,7 +19,7 @@ def run_project(base_dir: str, run_command:str):
         return True, result.stdout
 
     except subprocess.TimeoutExpired as e:
-        # If it's a server command, timeout is success as the server is running
+        
         if "http.server" in run_command or "npm start" in run_command or "app.py" in run_command:
             return True, f"Server started and running inside container: {run_command}"
         return False, f"Command timed out: {str(e)}"
@@ -71,7 +71,7 @@ def create_dockerfile(base_dir: str):
             "EXPOSE 8000\n"
         )
     else:
-        # Defaults to a Python environment
+        
         content = (
             "FROM python:3.10-slim\n"
             "WORKDIR /app\n"
@@ -114,13 +114,13 @@ def install_dependencies(base_dir: str):
         
         image_name = f"sandbox_{os.path.basename(base_dir).lower()}"
         
-        # Build the container image
+        
         result = subprocess.run(
             ["docker", "build", "-t", image_name, "."],
             cwd=base_dir,
             capture_output=True,
             text=True,
-            timeout=300 # Increased timeout for image build
+            timeout=300 
         )
         
         if result.returncode != 0:
